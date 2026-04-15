@@ -58,6 +58,10 @@ Every site in the index is scored 0-100 based on 7 signals that determine how cl
 }
 ```
 
+## Deeper docs
+
+See [USAGE.md](./USAGE.md) for a practical guide: tool arguments, recipes ("find me an email API that agents can actually call"), scoring details, and design principles.
+
 ## License
 
 The MCP server source lives in a private repo. This README is MIT-licensed — use the `claude mcp add` command freely.
