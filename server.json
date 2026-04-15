@@ -1,0 +1,14 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "ai.nothumansearch/search",
+  "title": "Not Human Search",
+  "description": "Search engine for AI agents. Find websites and APIs ranked by agentic readiness.",
+  "version": "1.0.0",
+  "websiteUrl": "https://nothumansearch.ai",
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://nothumansearch.ai/mcp"
+    }
+  ]
+}
