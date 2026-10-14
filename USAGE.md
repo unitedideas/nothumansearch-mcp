@@ -21,27 +21,33 @@ Find agent-ready sites by keyword, category, or minimum readiness score.
 | `query` | string | Optional full-text query. Searches name, description, domain, tags. |
 | `category` | string | Optional. One of: `ai-tools`, `communication`, `data`, `developer`, `ecommerce`, `education`, `finance`, `health`, `jobs`, `news`, `productivity`, `security`. |
 | `min_score` | int | Optional. 0-100. Default 0. |
-| `per_page` | int | Optional. Max results. Default 20. |
+| `limit` | int | Optional. Default 10, maximum 20. |
+| `has_api` | boolean | Optional. Require a structured API signal. |
+| `has_mcp` | boolean | Optional. Require an MCP server signal. |
+| `has_openapi` | boolean | Optional. Require an OpenAPI specification. |
+| `has_llms_txt` | boolean | Optional. Require an llms.txt file. |
 
-Returns a list of sites with `domain`, `name`, `description`, `agentic_score`, `category`, `tags`, and `url` (report page).
+The MCP response includes readable text and `structuredContent` with `results`, `total`, `search_id`, and `detail_actions`. Each result includes its canonical provider `url`.
+
+Keep the returned `search_id` when opening a result. The corresponding `detail_actions` entry supplies the arguments for `get_site_details`. A lookup without `search_id` still returns details, but does not record a selection from that search.
 
 ### `get_site_details`
 
-Full readiness report for a single domain — returns the 7-signal breakdown (llms.txt, ai-plugin.json, OpenAPI, structured API, MCP server, robots.txt AI rules, Schema.org) plus tags and category.
+Returns the readiness report for a bare `domain`. Pass the optional `search_id` from the search that returned that domain to record the selection. Selection does not imply action interest or contact a provider.
 
 ### `get_stats`
 
-Index stats: `total_sites`, `avg_score`, `top_category`. Useful for agents that want to brag about the size of the index they're searching.
+Index stats: `total_sites`, `avg_score`, `top_category`. These describe the index, not customer use.
 
 ## 3. Practical recipes
 
 ### "Find me an email API that an agent can actually call"
 
 ```
-search_agents(query="email", category="communication", min_score=50)
+search_agents(query="email", category="communication", has_api=true, min_score=50, limit=10)
 ```
 
-Returns Resend, Postmark, SendGrid, Loops, etc. — ranked by how cleanly an agent can integrate.
+Returns matching indexed services. Inspect the returned documentation before choosing a provider; a readiness score does not verify integration success.
 
 ### "What's the readiness of Stripe?"
 
@@ -51,13 +57,26 @@ get_site_details(domain="stripe.com")
 
 Returns the 7-signal report. Agents use this to decide whether to call the API directly or escalate to a human for credentials.
 
-### "Find all MCP servers for finance"
+### "Find MCP servers for finance"
 
 ```
-search_agents(query="mcp", category="finance", min_score=40)
+search_agents(category="finance", has_mcp=true, min_score=40, limit=10)
 ```
 
-Filters down to sites that expose an MCP server AND are finance-adjacent.
+Requires both the finance category and an indexed MCP signal. The keyword "mcp" alone does not enforce that filter.
+
+### Search, then inspect a returned result
+
+```text
+search_agents(query="browser automation", has_api=true, limit=10)
+get_site_details(domain="<returned domain>", search_id="<returned search_id>")
+```
+
+The angle-bracket values are placeholders. Use a domain and receipt from the same response, or invoke its supplied `detail_actions` entry.
+
+Use capability filters such as `has_api` rather than adding generic capability words to the query. Current keyword search can match only part of a multiword query. Check that the result fits the requested task.
+
+Any optional `record_action_interest` step requires explicit current intent from the human or company principal. Never infer that intent from a search or selection. It does not contact a provider or prove a sale.
 
 ## 4. Scoring (how the 0-100 score is built)
 
@@ -67,11 +86,11 @@ Filters down to sites that expose an MCP server AND are finance-adjacent.
 | `ai-plugin.json` | 20 | Legacy but still useful agent manifest |
 | OpenAPI spec | 20 | Deterministic API surface, agents can generate clients |
 | Structured API | 15 | Evidence of REST/GraphQL endpoint |
-| MCP server | 10 | Native agent protocol — zero integration work |
+| MCP server | 10 | Evidence of an MCP endpoint; client setup and provider access may still be required |
 | `robots.txt` AI rules | 5 | Site is deliberate about agent access |
 | Schema.org markup | 5 | Structured data extractable from any page |
 
-Sites without at least one strong signal (llms.txt, ai-plugin.json, OpenAPI, structured API, or MCP server) are filtered out of the index entirely — the NHS index is agent-first by construction.
+Search results require a structured API, OpenAPI, ai-plugin, or MCP signal. An llms.txt file alone does not qualify a site for discovery results.
 
 ## 5. Other surfaces for humans
 
@@ -84,7 +103,7 @@ Sites without at least one strong signal (llms.txt, ai-plugin.json, OpenAPI, str
 ## 6. Design principles
 
 1. **Zero-friction for agents.** No auth, no API key, no install. `claude mcp add` and you're querying.
-2. **Agent-first index.** Signals, not popularity. A tiny site with a perfect `llms.txt` ranks higher than a Fortune-500 site with zero agent signals.
+2. **Agent-first index.** Signals, not popularity. Search requires an interaction signal; an llms.txt file alone is insufficient.
 3. **Transparent scoring.** Every site shows why it got the score it got. No opaque ranking.
 4. **Open protocol.** MCP is the primary interface. REST and the web UI are for humans and legacy agents.
 
