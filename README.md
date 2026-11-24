@@ -14,6 +14,21 @@ claude mcp add --transport http nothumansearch https://nothumansearch.ai/mcp
 
 Any MCP-compatible client (Claude Code, Cline, Cursor, Zed, Goose, etc.) can connect to the same endpoint.
 
+## Client configuration
+
+Clients that accept a `mcpServers` object can use this hosted HTTP entry:
+
+```json
+{
+  "mcpServers": {
+    "nothumansearch": {
+      "type": "http",
+      "url": "https://nothumansearch.ai/mcp"
+    }
+  }
+}
+```
+
 ## Tools
 
 | Tool | Purpose |
@@ -42,7 +57,7 @@ Every site in the index is scored 0-100 based on 7 signals that determine how cl
 - **Embeddable badge:** `https://nothumansearch.ai/badge/{domain}.svg`
 - **Submit a site:** `POST https://nothumansearch.ai/api/v1/submit`
 
-## Manifest
+## Registry manifest
 
 ```json
 {
@@ -64,4 +79,4 @@ See [USAGE.md](./USAGE.md) for a practical guide: tool arguments, recipes ("find
 
 ## License
 
-The MCP server source lives in a private repo. This README is MIT-licensed — use the `claude mcp add` command freely.
+Server source is available in [nothumansearch](https://github.com/unitedideas/nothumansearch). This README is MIT-licensed.
