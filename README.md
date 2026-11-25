@@ -16,7 +16,7 @@ Any MCP-compatible client (Claude Code, Cline, Cursor, Zed, Goose, etc.) can con
 
 ## Client configuration
 
-Clients that accept a `mcpServers` object can use this hosted HTTP entry:
+For Claude Code, put this hosted HTTP entry in your project's `.mcp.json`:
 
 ```json
 {
@@ -28,6 +28,8 @@ Clients that accept a `mcpServers` object can use this hosted HTTP entry:
   }
 }
 ```
+
+Approve the project server when Claude Code prompts. Other clients use their own transport settings.
 
 ## Tools
 
